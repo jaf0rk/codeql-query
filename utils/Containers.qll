@@ -104,7 +104,7 @@ predicate isIteratorGetterFunction(Function f) {
  * Determine whether it is an STL container
  */
 
-newtype TIteratorGetting = 
+private newtype TIteratorGetting = 
 MakeIteratorGetting(FunctionCall fc, Variable v) {
     iteratorVariableBinding(fc, v)
 }
@@ -119,10 +119,50 @@ extends TIteratorGetting {
         this = MakeIteratorGetting(fc, v)
     }
 
-    FunctionCall getCall() { result = fc }
+    FunctionCall getIteratorGetterCall() { result = fc }
 
-    IteratorGetterFunction getIteratorGetterFunc() { 
+    IteratorGetterFunction getIteratorGetter() { 
         result = fc.getTarget()
+    }
+
+    ControlFlowNode getASuccessor() {
+        result = fc.getASuccessor()
+    }
+
+    ControlFlowNode getATrueSuccessor() {
+        result = fc.getATrueSuccessor()
+    }
+
+    ControlFlowNode getAFalseSuccessor() {
+        result = fc.getAFalseSuccessor()
+    }
+
+    File getFile() {
+        result = fc.getFile()
+    }
+
+    BlockStmt getEnclosingBlock() { 
+        result = fc.getEnclosingBlock()
+    }
+
+    Declaration getEnclosingDeclaration() {
+        result = fc.getEnclosingDeclaration()
+    }
+
+    Element getEnclosingElement() {
+        result = fc.getEnclosingElement()
+    }
+
+    Function getEnclosingFunction() {
+        result = fc.getEnclosingFunction()
+    }
+
+    Stmt getEnclosingStmt() {
+        result = fc.getEnclosingStmt()
+    }
+
+    Variable getEnclosingVariable() {
+        result = fc.getEnclosingVariable()
     }
 
     Expr getContainer() { result = fc.getQualifier() }
@@ -132,6 +172,23 @@ extends TIteratorGetting {
     string toString() { result = "IteratorGetting" }
 
     Location getLocation() { result = fc.getLocation() }
+}
+
+class EasyFailContainerType 
+extends ClassTemplateInstantiation{
+    EasyFailContainerType() {
+        this instanceof VectorType
+        or 
+        this instanceof StringType
+        or
+        this instanceof DequeType
+        or
+        this instanceof STLArrayType
+        or
+        this instanceof FlatMapType
+        or
+        this instanceof FlatSetAlias
+    }
 }
 
 // 迭代器获取函数
@@ -175,6 +232,33 @@ extends ClassTemplateInstantiation {
         this instanceof MultisetType
         or
         this instanceof MultimapType
+        or
+        this instanceof StringType
+        or
+        this instanceof DequeType
+        or
+        this instanceof STLArrayType
+    }
+}
+
+class StringType 
+extends ClassTemplateInstantiation{
+    StringType(){
+        matchStlContainer("string", this)
+    }
+}
+
+class DequeType
+extends ClassTemplateInstantiation{
+    DequeType(){
+        matchStlContainer("deque", this)
+    }
+}
+
+class STLArrayType
+extends ClassTemplateInstantiation{
+    STLArrayType(){
+        matchStlContainer("array", this)
     }
 }
 
