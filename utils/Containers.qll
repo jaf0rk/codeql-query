@@ -110,15 +110,20 @@ MakeIteratorGetting(FunctionCall fc, Variable v) {
 }
 
 // 获取任意迭代器获取代码
-class IteratorGetting extends TIteratorGetting {
-    FunctionCall fc;
-    Variable v;
+class IteratorGetting 
+extends TIteratorGetting {
+    private FunctionCall fc;
+    private Variable v;
 
     IteratorGetting() {
         this = MakeIteratorGetting(fc, v)
     }
 
     FunctionCall getCall() { result = fc }
+
+    IteratorGetterFunction getIteratorGetterFunc() { 
+        result = fc.getTarget()
+    }
 
     Expr getContainer() { result = fc.getQualifier() }
 
