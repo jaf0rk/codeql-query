@@ -1,7 +1,12 @@
 import cpp
 
 
-from Class c, Function f, SwitchStmt ss, string name, Enum e
+from 
+  Class c, 
+  Function f, 
+  SwitchStmt ss, 
+  string name, 
+  Enum e
 where
   // 第一个查询条件：switch 无 default 分支，获取其表达式类型名
   count(ss.getDefaultCase()) = 0 and

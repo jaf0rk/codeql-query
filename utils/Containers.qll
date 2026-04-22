@@ -5,6 +5,29 @@ import semmle.code.cpp.dataflow.new.DataFlow
 /**
  * Private predicate
  */
+private predicate iteratorVariableBinding(
+    FunctionCall fc, Variable v) {
+    isIteratorGetterFunction(fc.getTarget())
+    and
+    (
+        exists(AssignExpr ae |
+        ae.getRValue() = fc
+        and
+        ae.getLValue() = v.getAnAccess()
+        )
+        or
+        exists(Initializer i |
+        i.getExpr() = fc
+        and
+        i.getDeclaration() = v
+        )
+    )
+    and
+    fc.getQualifier()
+        .getType()
+        .getUnderlyingType() instanceof ContainerType
+}
+
 private predicate matchStlContainer(
     string name, ClassTemplateInstantiation ct) {
     
@@ -30,6 +53,7 @@ private predicate matchChromiumContainer(
         c = ct)
 }
 
+// 判断是否是容器插入操作
 predicate isInsertFunction(Function f) {
   f.getDeclaringType() 
   instanceof 
@@ -39,6 +63,30 @@ predicate isInsertFunction(Function f) {
   "insert", "emplace", "assign"]
 }
 
+// 判断容器是否不是局部变量
+predicate isExternalContainer(Expr c) {
+  // 情况1：成员字段（没有创建函数，视为外部）
+  exists(FieldAccess fa | fa = c)
+  or
+  // 情况2：全局变量（没有创建函数，视为外部）
+  exists(VariableAccess va |
+    va = c and
+    va.getTarget() instanceof GlobalVariable
+  )
+  or
+  // 情况3：函数参数（创建函数是调用方，不是当前函数）
+  exists(VariableAccess va |
+    va = c and
+    va.getTarget() instanceof Parameter
+  )
+}
+
+// 判断容器是否是局部变量
+predicate isInternalContainer(Expr c) {
+    not isExternalContainer(c)
+}
+
+// 判断是否是容器元素获取函数
 predicate isDirectAccessFunction(Function f) {
   f.getDeclaringType() 
   instanceof 
@@ -47,17 +95,61 @@ predicate isDirectAccessFunction(Function f) {
   f.getName() in ["operator[]", "at", "front", "back"]
 }
 
+// 判断是否是迭代器获取函数
 predicate isIteratorGetterFunction(Function f) {
-  f.getDeclaringType() 
-  instanceof 
-  ContainerType
-  and
-  f.getName() in ["begin", "cbegin", "find", "rbegin"]
+    f instanceof IteratorGetterFunction
 }
 
 /**
  * Determine whether it is an STL container
  */
+
+newtype TIteratorGetting = 
+MakeIteratorGetting(FunctionCall fc, Variable v) {
+    iteratorVariableBinding(fc, v)
+}
+
+// 获取任意迭代器获取代码
+class IteratorGetting extends TIteratorGetting {
+    FunctionCall fc;
+    Variable v;
+
+    IteratorGetting() {
+        this = MakeIteratorGetting(fc, v)
+    }
+
+    FunctionCall getCall() { result = fc }
+
+    Expr getContainer() { result = fc.getQualifier() }
+
+    Variable getIterator() { result = v }
+
+    string toString() { result = "IteratorGetting" }
+
+    Location getLocation() { result = fc.getLocation() }
+}
+
+// 迭代器获取函数
+class IteratorGetterFunction 
+extends Function {
+    IteratorGetterFunction(){
+        this.getDeclaringType() 
+        instanceof 
+        ContainerType
+        and
+        this.getName() in ["begin", "cbegin", "find", "rbegin"]
+    }
+}
+
+// 迭代器获取函数调用
+class IteratorGetterFunctionCall
+extends FunctionCall {
+    IteratorGetterFunctionCall(){
+        this.getTarget() instanceof IteratorGetterFunction
+    }
+}
+
+// 所有STL容器类
 class STLContainerType 
 extends ClassTemplateInstantiation {
     STLContainerType(){
@@ -147,6 +239,7 @@ extends ClassTemplateInstantiation{
 /**
  * Determine whether it is an chromium container
  */
+// 所有Chrome内部定义的容器
 class ChromeContainerType
 extends ClassTemplateInstantiation {
     ChromeContainerType() {
