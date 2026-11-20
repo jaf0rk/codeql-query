@@ -2,6 +2,137 @@ import cpp
 import SmartPointer
 import ReverseTracker
 
+
+
+/**
+ * All callback class
+ */
+
+class CallbackListBase 
+extends ClassTemplateInstantiation {
+    CallbackListBase() {
+        this.getSimpleName() = "CallbackListBase"
+        and
+        this.getFile()
+        .getBaseName() = "callback_list.h"
+    }
+}
+
+class RepeatingCallbackList 
+extends ClassTemplateInstantiation {
+    RepeatingCallbackList() {
+        this.getSimpleName() = "RepeatingCallbackList"
+        and
+        this.getABaseClass() instanceof CallbackListBase
+        and
+        this.getNamespace().getName() = "base"
+        and
+        this.getFile()
+        .getBaseName() = "callback_list.h"
+    }
+}
+
+class RepeatingCallbackListNotifyCall
+extends FunctionCall {
+    RepeatingCallbackListNotifyCall() {
+        this.getTarget().getName() = "Notify"
+        and
+        this.getQualifier()
+        .getType()
+        .stripType()
+        .(Class)
+        .getABaseClass*() instanceof RepeatingCallbackList
+    }
+}
+
+class RepeatingCallbackListAddCall
+extends FunctionCall {
+    RepeatingCallbackListAddCall() {
+        (
+            this.getTarget().getName() = "Add"
+            or
+            this.getTarget().getName() = "AddUnsafe"
+        )
+        and
+        this.getQualifier()
+        .getType()
+        .stripType()
+        .(Class)
+        .getABaseClass*() instanceof RepeatingCallbackList
+    }
+}
+
+class OnceCallbackList 
+extends ClassTemplateInstantiation{
+    OnceCallbackList() {
+        this.getSimpleName() = "OnceCallbackList"
+        and
+        this.getABaseClass() instanceof CallbackListBase
+        and
+        this.getNamespace().getName() = "base"
+        and
+        this.getFile()
+        .getBaseName() = "callback_list.h"
+    }
+}
+
+class OnceCallbackListNotifyCall
+extends FunctionCall {
+    OnceCallbackListNotifyCall() {
+        this.getTarget().getName() = "Notify"
+        and
+        this.getQualifier()
+        .getType()
+        .stripType()
+        .(Class)
+        .getABaseClass*() instanceof OnceCallbackList
+    }
+}
+
+class OnceCallbackListAddCall
+extends FunctionCall {
+    OnceCallbackListAddCall() {
+        (
+            this.getTarget().getName() = "Add"
+            or
+            this.getTarget().getName() = "AddUnsafe"
+        )
+        and
+        this.getQualifier()
+        .getType()
+        .stripType()
+        .(Class)
+        .getABaseClass*() instanceof OnceCallbackList
+    }
+}
+
+class CallbackList 
+extends ClassTemplateInstantiation{
+    CallbackList() {
+        this instanceof RepeatingCallbackList
+        or
+        this instanceof OnceCallbackList
+    }
+}
+
+class CallbackListNotifyCall
+extends FunctionCall {
+    CallbackListNotifyCall() {
+        this instanceof OnceCallbackListNotifyCall
+        or
+        this instanceof RepeatingCallbackListNotifyCall
+    }
+}
+
+class CallbackListAddCall
+extends FunctionCall {
+    CallbackListAddCall() {
+        this instanceof OnceCallbackListAddCall
+        or
+        this instanceof RepeatingCallbackListAddCall
+    }
+}
+
 /**
  * All OnceCallback class
  */
@@ -9,6 +140,8 @@ class OnceCallbackClass
 extends ClassTemplateInstantiation {
     OnceCallbackClass() { 
         this.getSimpleName() = "OnceCallback"
+        and
+        this.getNamespace().getName() = "base"
         and
         this.getFile()
         .getBaseName() = "callback.h"
@@ -22,6 +155,8 @@ class RepeatingCallbackClass
 extends ClassTemplateInstantiation {
     RepeatingCallbackClass() {
         this.getSimpleName() = "RepeatingCallback"
+        and
+        this.getNamespace().getName() = "base"
         and
         this.getFile()
         .getBaseName() = "callback.h"

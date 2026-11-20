@@ -53,6 +53,18 @@ private predicate matchChromiumContainer(
         c = ct)
 }
 
+private predicate matchAbseilContainer(
+    string name, ClassTemplateInstantiation ct) {
+    exists(ClassTemplateInstantiation c | 
+        c.getSimpleName() = name
+        and
+        c.getNamespace()
+        .getQualifiedName()
+        .matches("absl%")
+        and
+        c = ct)
+}
+
 // 判断是否是容器插入操作
 predicate isInsertFunction(Function f) {
   f.getDeclaringType() 
@@ -335,6 +347,24 @@ extends ClassTemplateInstantiation {
         this instanceof FlatTreeType
         or
         this instanceof FlatMapType
+        or
+        this instanceof AbslFlatHashMapType
+        or
+        this instanceof AbslFlatHashSetType
+        or
+        this instanceof AbslNodeHashMapType
+        or
+        this instanceof AbslNodeHashSetType
+        or
+        this instanceof AbslInlinedVectorType
+        or
+        this instanceof AbslBtreeMapType
+        or
+        this instanceof AbslBtreeSetType
+        or
+        this instanceof AbslBtreeMultimapType
+        or
+        this instanceof AbslBtreeMultisetType
     }
 }
 
@@ -361,6 +391,69 @@ extends ClassTemplateInstantiation {
         result = this.getTemplateArgument(3)
         .(ClassTemplateInstantiation)
         .getUnspecifiedType()
+    }
+}
+
+class AbslFlatHashMapType
+extends ClassTemplateInstantiation {
+    AbslFlatHashMapType(){
+        matchAbseilContainer("flat_hash_map", this)
+    }
+}
+
+class AbslFlatHashSetType
+extends ClassTemplateInstantiation {
+    AbslFlatHashSetType(){
+        matchAbseilContainer("flat_hash_set", this)
+    }
+}
+
+class AbslNodeHashMapType
+extends ClassTemplateInstantiation {
+    AbslNodeHashMapType(){
+        matchAbseilContainer("node_hash_map", this)
+    }
+}
+
+class AbslNodeHashSetType
+extends ClassTemplateInstantiation {
+    AbslNodeHashSetType(){
+        matchAbseilContainer("node_hash_set", this)
+    }
+}
+
+class AbslInlinedVectorType
+extends ClassTemplateInstantiation {
+    AbslInlinedVectorType(){
+        matchAbseilContainer("InlinedVector", this)
+    }
+}
+
+class AbslBtreeMapType
+extends ClassTemplateInstantiation {
+    AbslBtreeMapType(){
+        matchAbseilContainer("btree_map", this)
+    }
+}
+
+class AbslBtreeSetType
+extends ClassTemplateInstantiation {
+    AbslBtreeSetType(){
+        matchAbseilContainer("btree_set", this)
+    }
+}
+
+class AbslBtreeMultimapType
+extends ClassTemplateInstantiation {
+    AbslBtreeMultimapType(){
+        matchAbseilContainer("btree_multimap", this)
+    }
+}
+
+class AbslBtreeMultisetType
+extends ClassTemplateInstantiation {
+    AbslBtreeMultisetType(){
+        matchAbseilContainer("btree_multiset", this)
     }
 }
 
